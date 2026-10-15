@@ -1,7 +1,7 @@
 import User from '../models/User.js';
 import { StatusCodes } from 'http-status-codes';
 import { BadRequestError, UnAuthenticatedError } from '../errors/index.js';
-import attachCookie from '../utils/attachCookie.js';
+import attachCookie, { getAuthCookieOptions } from '../utils/attachCookie.js';
 const register = async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -73,10 +73,7 @@ const getCurrentUser = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  res.cookie('token', 'logout', {
-    httpOnly: true,
-    expires: new Date(Date.now() + 1000),
-  });
+  res.clearCookie('token', getAuthCookieOptions());
   res.status(StatusCodes.OK).json({ msg: 'user logged out!' });
 };
 

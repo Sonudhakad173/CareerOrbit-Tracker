@@ -72,21 +72,24 @@ const AppContext = React.createContext();
 const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  // axios
+  const apiBaseUrl = (process.env.REACT_APP_API_URL || '/api/v1').replace(
+    /\/+$/,
+    ''
+  );
   const authFetch = axios.create({
-    baseURL: '/api/v1',
+    baseURL: apiBaseUrl,
+    withCredentials: true,
   });
-  // request
-
-  // response
 
   authFetch.interceptors.response.use(
     (response) => {
       return response;
     },
     (error) => {
-      // console.log(error.response)
-      if (error.response.status === 401) {
+      const isCredentialRequest = ['/auth/login', '/auth/register'].some((route) =>
+        error.config?.url?.endsWith(route)
+      );
+      if (error.response?.status === 401 && !isCredentialRequest) {
         logoutUser();
       }
       return Promise.reject(error);
@@ -107,10 +110,7 @@ const AppProvider = ({ children }) => {
   const setupUser = async ({ currentUser, endPoint, alertText }) => {
     dispatch({ type: SETUP_USER_BEGIN });
     try {
-      const { data } = await axios.post(
-        `/api/v1/auth/${endPoint}`,
-        currentUser
-      );
+      const { data } = await authFetch.post(`/auth/${endPoint}`, currentUser);
 
       const { user, location } = data;
       dispatch({
@@ -120,7 +120,11 @@ const AppProvider = ({ children }) => {
     } catch (error) {
       dispatch({
         type: SETUP_USER_ERROR,
-        payload: { msg: error.response.data.msg },
+        payload: {
+            msg:
+              error.response?.data?.msg ||
+              'Unable to reach the server. Please try again.',
+          },
       });
     }
     clearAlert();
@@ -130,7 +134,11 @@ const AppProvider = ({ children }) => {
   };
 
   const logoutUser = async () => {
-    await authFetch.get('/auth/logout');
+    try {
+      await authFetch.get('/auth/logout');
+    } catch (error) {
+      // Clear the local session even if the server cannot be reached.
+    }
     dispatch({ type: LOGOUT_USER });
   };
   const updateUser = async (currentUser) => {
@@ -144,10 +152,14 @@ const AppProvider = ({ children }) => {
         payload: { user, location },
       });
     } catch (error) {
-      if (error.response.status !== 401) {
+      if (error.response?.status !== 401) {
         dispatch({
           type: UPDATE_USER_ERROR,
-          payload: { msg: error.response.data.msg },
+          payload: {
+            msg:
+              error.response?.data?.msg ||
+              'Unable to reach the server. Please try again.',
+          },
         });
       }
     }
@@ -250,10 +262,14 @@ const AppProvider = ({ children }) => {
       await authFetch.delete(`/jobs/${jobId}`);
       getJobs();
     } catch (error) {
-      if (error.response.status === 401) return;
+      if (error.response?.status === 401) return;
       dispatch({
         type: DELETE_JOB_ERROR,
-        payload: { msg: error.response.data.msg },
+        payload: {
+            msg:
+              error.response?.data?.msg ||
+              'Unable to reach the server. Please try again.',
+          },
       });
     }
     clearAlert();
@@ -292,7 +308,7 @@ const AppProvider = ({ children }) => {
         payload: { user, location },
       });
     } catch (error) {
-      if (error.response.status === 401) return;
+      if (error.response?.status === 401) return;
       logoutUser();
     }
   };

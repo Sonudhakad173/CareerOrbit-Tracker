@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 import 'express-async-errors';
 import morgan from 'morgan';
+import cors from 'cors';
+import { existsSync } from 'fs';
 
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -32,8 +34,25 @@ if (process.env.NODE_ENV !== 'production') {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// only when ready to deploy
-app.use(express.static(path.resolve(__dirname, './client/build')));
+const clientBuildPath = path.resolve(__dirname, './client/build');
+const clientIndexPath = path.join(clientBuildPath, 'index.html');
+const allowedOrigins = (process.env.CLIENT_ORIGIN || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    credentials: true,
+  })
+);
+app.use(express.static(clientBuildPath));
 
 app.use(express.json());
 app.use(helmet());
@@ -44,9 +63,22 @@ app.use(cookieParser());
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/jobs', authenticateUser, jobsRouter);
 
-// only when ready to deploy
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, './client/build', 'index.html'));
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+app.get('/', (req, res, next) => {
+  if (existsSync(clientIndexPath)) {
+    return res.sendFile(clientIndexPath);
+  }
+  return res.status(200).json({ msg: 'CareerOrbit Tracker API is running.' });
+});
+
+app.get('*', (req, res, next) => {
+  if (existsSync(clientIndexPath)) {
+    return res.sendFile(clientIndexPath);
+  }
+  return next();
 });
 
 app.use(notFoundMiddleware);
