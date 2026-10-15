@@ -36,15 +36,25 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const clientBuildPath = path.resolve(__dirname, './client/build');
 const clientIndexPath = path.join(clientBuildPath, 'index.html');
-const allowedOrigins = (process.env.CLIENT_ORIGIN || '')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const allowedOrigins = new Set(
+  [
+    'https://career-orbit-tracker-y4am.vercel.app',
+    ...(process.env.CLIENT_ORIGIN || '').split(','),
+  ]
+    .map((origin) => origin.trim().replace(/\/+$/, ''))
+    .filter(Boolean)
+);
+const vercelPreviewOriginPattern =
+  /^https:\/\/career-orbit-tracker-y4am-[a-z0-9-]+-sonudhakad173s-projects\.vercel\.app$/i;
 
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.has(origin) ||
+        vercelPreviewOriginPattern.test(origin)
+      ) {
         return callback(null, true);
       }
       return callback(null, false);

@@ -1,5 +1,6 @@
 const getAuthCookieOptions = () => {
-  const crossOriginFrontend = Boolean(process.env.CLIENT_ORIGIN);
+  const crossOriginFrontend =
+    process.env.NODE_ENV === 'production' || Boolean(process.env.CLIENT_ORIGIN);
 
   return {
     httpOnly: true,
