@@ -19,6 +19,10 @@ const UserSchema = new mongoose.Schema({
     },
     unique: true,
   },
+  isDemo: {
+    type: Boolean,
+    default: false,
+  },
   password: {
     type: String,
     required: [true, 'Please provide password'],
@@ -47,9 +51,11 @@ UserSchema.pre('save', async function () {
 })
 
 UserSchema.methods.createJWT = function () {
-  return jwt.sign({ userId: this._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_LIFETIME || '1d',
-  })
+  return jwt.sign(
+    { userId: this._id, isDemo: this.isDemo === true },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_LIFETIME || '1d' }
+  )
 }
 
 UserSchema.methods.comparePassword = async function (candidatePassword) {

@@ -2,9 +2,11 @@ import { useRef, useState } from 'react'
 import { FormRow, FormRowSelect, Alert } from '../../components'
 import { useAppContext } from '../../context/appContext'
 import Wrapper from '../../assets/wrappers/DashboardFormPage'
+import { Navigate } from 'react-router-dom'
 
 const AddJob = () => {
   const {
+    user,
     isLoading,
     isEditing,
     showAlert,
@@ -85,6 +87,8 @@ const AddJob = () => {
   }
 
   const displayedAnalysis = analysisResult || resumeAnalysis
+
+  if (user?.isDemo) return <Navigate to='/all-jobs' replace />
 
   return (
     <Wrapper>

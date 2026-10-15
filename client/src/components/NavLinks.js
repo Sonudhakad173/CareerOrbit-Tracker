@@ -1,10 +1,16 @@
 import links from '../utils/links';
 import { NavLink } from 'react-router-dom';
+import { useAppContext } from '../context/appContext';
 
 const NavLinks = ({ toggleSidebar }) => {
+  const { user } = useAppContext();
+  const visibleLinks = user?.isDemo
+    ? links.filter(({ path }) => !['add-job', 'profile'].includes(path))
+    : links;
+
   return (
     <div className='nav-links'>
-      {links.map((link) => {
+      {visibleLinks.map((link) => {
         const { text, path, id, icon } = link;
 
         return (

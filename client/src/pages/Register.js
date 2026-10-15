@@ -93,13 +93,13 @@ const Register = () => {
           disabled={isLoading}
           onClick={() => {
             setupUser({
-              currentUser: { email: 'testUser@test.com', password: 'secret' },
-              endPoint: 'login',
-              alertText: 'Login Successful! Redirecting...',
+              currentUser: {},
+              endPoint: 'demo',
+              alertText: 'Demo access ready! Redirecting...',
             });
           }}
         >
-          {isLoading ? 'loading...' : 'demo app'}
+          {isLoading ? 'loading...' : 'try demo app'}
         </button>
         <p>
           {values.isMember ? 'Not a member yet?' : 'Already a member?'}

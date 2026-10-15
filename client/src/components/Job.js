@@ -15,7 +15,7 @@ const Job = ({
   status,
   resumeAnalysis,
 }) => {
-  const { setEditJob, deleteJob } = useAppContext()
+  const { setEditJob, deleteJob, user } = useAppContext()
 
   let date = moment(createdAt)
   date = date.format('MMM Do, YYYY')
@@ -86,24 +86,26 @@ const Job = ({
             </details>
           </section>
         )}
-        <footer>
-          <div className='actions'>
-            <Link
-              to='/add-job'
-              className='btn edit-btn'
-              onClick={() => setEditJob(_id)}
-            >
-              Edit
-            </Link>
-            <button
-              type='button'
-              className='btn delete-btn'
-              onClick={() => deleteJob(_id)}
-            >
-              Delete
-            </button>
-          </div>
-        </footer>
+        {!user?.isDemo && (
+          <footer>
+            <div className='actions'>
+              <Link
+                to='/add-job'
+                className='btn edit-btn'
+                onClick={() => setEditJob(_id)}
+              >
+                Edit
+              </Link>
+              <button
+                type='button'
+                className='btn delete-btn'
+                onClick={() => deleteJob(_id)}
+              >
+                Delete
+              </button>
+            </div>
+          </footer>
+        )}
       </div>
     </Wrapper>
   )

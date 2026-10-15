@@ -47,6 +47,25 @@ const login = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ user, location: user.location });
 };
+const demoLogin = async (req, res) => {
+  const demoEmail = process.env.DEMO_EMAIL?.trim().toLowerCase();
+  if (!demoEmail) {
+    return res
+      .status(StatusCodes.SERVICE_UNAVAILABLE)
+      .json({ msg: 'Demo access is not configured yet. Please try again later.' });
+  }
+
+  const user = await User.findOne({ email: demoEmail, isDemo: true });
+  if (!user) {
+    return res
+      .status(StatusCodes.SERVICE_UNAVAILABLE)
+      .json({ msg: 'Demo access is not ready yet. Please try again later.' });
+  }
+
+  const token = user.createJWT();
+  attachCookie({ res, token });
+  res.status(StatusCodes.OK).json({ user, location: user.location });
+};
 const updateUser = async (req, res) => {
   const { email, name, lastName, location } = req.body;
   if (!email || !name || !lastName || !location) {
@@ -77,4 +96,4 @@ const logout = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: 'user logged out!' });
 };
 
-export { register, login, updateUser, getCurrentUser, logout };
+export { register, login, demoLogin, updateUser, getCurrentUser, logout };

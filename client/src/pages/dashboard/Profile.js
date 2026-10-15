@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FormRow, Alert } from '../../components'
 import { useAppContext } from '../../context/appContext'
 import Wrapper from '../../assets/wrappers/DashboardFormPage'
+import { Navigate } from 'react-router-dom'
 const Profile = () => {
   const { user, showAlert, displayAlert, updateUser, isLoading } =
     useAppContext()
@@ -19,6 +20,8 @@ const Profile = () => {
     }
     updateUser({ name, email, lastName, location })
   }
+
+  if (user?.isDemo) return <Navigate to='/all-jobs' replace />
 
   return (
     <Wrapper>

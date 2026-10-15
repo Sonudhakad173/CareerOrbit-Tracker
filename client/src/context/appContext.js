@@ -86,9 +86,11 @@ const AppProvider = ({ children }) => {
       return response;
     },
     (error) => {
-      const isCredentialRequest = ['/auth/login', '/auth/register'].some((route) =>
-        error.config?.url?.endsWith(route)
-      );
+      const isCredentialRequest = [
+        '/auth/login',
+        '/auth/register',
+        '/auth/demo',
+      ].some((route) => error.config?.url?.endsWith(route));
       if (error.response?.status === 401 && !isCredentialRequest) {
         logoutUser();
       }
